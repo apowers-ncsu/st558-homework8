@@ -1,0 +1,97 @@
+---
+title: "Homework 8"
+author: "Andy Powers"
+format: html
+---
+
+# HW 8: Basic Modeling Practice
+
+This document demonstrates use of the principles and steps to make models in R:
+
+1. read data
+2. EDA
+3. split data
+4. fit models
+5. apply best model
+
+## Context
+
+### Libraries
+
+This work relies heavily on `tidymodels` packages and related items, so we include this and the standard `tidyverse` code.
+
+```{r}
+#| echo: false
+library(tidymodels)
+library(tidyverse)
+```
+
+### Dataset
+
+BLAHBLAHBLAH
+We will use a dataset from the UCI Machine Learning Repository. This data set is about bike sharing rentals
+and is available at the assignment link. You can learn more about the data here. The data is available at
+https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv
+The data description describes the following variables:
+• Date : day/month/year
+• Rented Bike count - Count of bikes rented at each hour
+• Hour - Hour of the day
+• Temperature-Temperature in Celsius
+• Humidity - %
+• Windspeed - m/s
+• Visibility - 10m
+• Dew point temperature - Celsius
+• Solar radiation - MJ/m2
+• Rainfall - mm
+• Snowfall - cm
+• Seasons - Winter, Spring, Summer, Autumn
+• Holiday - Holiday/No holiday
+• Functional Day - NoFunc(Non Functional Hours), Fun(Functional hours)
+BLAHBLAHBLAH
+
+## Read data
+
+BLAH
+
+## EDA
+
+### 1. Check for missing values
+
+### 2. Check column types and values
+
+### 3. Convert Date field types
+
+### 4. Convert character field types
+
+### 5. Rename variables
+
+### 6a. Create summary statistics
+
+### 6b. Review summary and subset
+
+### 7. Summarize across hours
+
+### 8a. Recreate summary statistics
+
+### 8b. Explore data via plots and correlations
+
+## Split data
+
+BLAHBLAH 75/25, 10fold CV
+
+## Fit models
+
+BLAHBLAH
+
+### Recipe 1
+
+### Recipe 2
+
+### Recipe 3
+
+## Apply best model
+
+BLAH what is best?
+
+BLAH do it
+
