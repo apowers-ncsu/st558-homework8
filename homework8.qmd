@@ -9,8 +9,8 @@ format: html
 This document demonstrates use of the principles and steps to make models in R:
 
 1.  read data
-2.  EDA
-3.  split data
+2.  check the data
+3.  split the data
 4.  fit models
 5.  apply best model
 
@@ -24,6 +24,7 @@ This work relies heavily on `tidymodels` packages and related items, so we inclu
 #| echo: false
 library(tidymodels)
 library(tidyverse)
+library(corrr)
 ```
 
 ### Dataset
@@ -59,9 +60,11 @@ data_raw <- read_csv(
 
 ## EDA
 
+### Check the data
+
 Now, I need to review the data and clean it up, then summarize it.
 
-### 1. Check for missing values
+#### 1. Check for missing values
 
 ```{r}
 data_raw |> 
@@ -70,7 +73,7 @@ data_raw |>
 
 Looks ok, no missing values (NA).
 
-### 2. Check column types and values
+#### 2. Check column types and values
 
 Do the column types look accurate?
 
@@ -118,7 +121,7 @@ data_raw |>
 
 Unique categorical values look fine as well.
 
-### 3. Convert Date field types
+#### 3. Convert Date field types
 
 Now, let's fix the Date field format.
 
@@ -128,7 +131,7 @@ data_raw <- data_raw |>
 str(data_raw$Date)
 ```
 
-### 4. Convert character field types
+#### 4. Convert character field types
 
 Next, turn character fields into factors.
 
@@ -153,7 +156,7 @@ data_raw <- data_raw |>
 str(select(data_raw,where(is_integer)))
 ```
 
-### 5. Rename variables
+#### 5. Rename variables
 
 And lastly, cleaning up the names for easier work without encoding.
 
@@ -175,7 +178,7 @@ data_raw <- data_raw |>
 str(data_raw)
 ```
 
-### 6. Explore summary statistics
+#### 6. Explore summary statistics
 
 Now, to display some summaries of the tidied data. Numeric summaries and then categorical contingency tables.
 
@@ -237,7 +240,7 @@ data_raw <- data_raw |>
   filter(FunctioningDay == 'Yes')
 ```
 
-### 7. Consolidate dataset
+#### 7. Consolidate dataset
 
 Now for simplicity, we adjust our data to summarize across hours so that each day has only *one* observation associated with it.
 
@@ -268,7 +271,7 @@ summary_data <- data_raw |>
 head(summary_data)
 ```
 
-### 8a. Recreate summary statistics
+#### 8. Recreate summary statistics and explore plots
 
 Now, to restate summaries of the updated dataset.
 
@@ -323,23 +326,31 @@ The shapes here are interesting. In Winter, no matter the temperature, few bikes
 
 Lastly, we display correlations for all numeric variables.
 
-### 8b. Explore data via plots and correlations
+```{r}
+summary_data |>
+  select(where(is.numeric)) |>
+  correlate() |>
+  shave() |>
+  rplot()
+```
 
-## Split data
+This package `corrr` has cool features, including this color-coded display of all correlations between numeric variables. Immediately, we can see the strongest relationships with Bike Counts are the Temperature, Dew Point, and Solar Radiation. It's likely those are interrelated and tell the same story (evidenced by the strong correlation between Temperature and Dew Point shown in the chart, elsewhere). The strongest negative correlation between non-result variables is that of Humidity and Visibility. I don't normally think of humidity impacting visibility, so that's interesting; is it because of pollution or am I simply unaware that wet air does impede visibility, perhaps at longer distances?
+
+### Split the data
 
 BLAHBLAH 75/25, 10fold CV
 
-## Fit models
+### Fit models
 
 BLAHBLAH
 
-### Recipe 1
+#### Recipe 1
 
-### Recipe 2
+#### Recipe 2
 
-### Recipe 3
+#### Recipe 3
 
-## Apply best model
+### Apply best model
 
 BLAH what is best?
 
