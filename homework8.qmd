@@ -97,7 +97,7 @@ Do the numerical summaries look reasonable?
 data_raw |>
   select(where(is.numeric)) |>
   psych::describe() |>
-  select(min,median,max,range,sd)
+  select(min,max,range,median,sd)
 ```
 
 Nothing looks unreasonable in the numeric variable spread.
@@ -150,7 +150,7 @@ str(select(data_raw,where(is_integer)))
 And lastly, cleaning up the names for easier work without encoding.
 
 ```{r}
-  data_raw |>
+data_raw <- data_raw |>
   mutate(BikeCount = `Rented Bike Count`,
          Temperature = `Temperature(°C)`,
          Humidity = `Humidity(%)`,
@@ -160,16 +160,74 @@ And lastly, cleaning up the names for easier work without encoding.
          SolarRadiation = `Solar Radiation (MJ/m2)`,
          Rainfall = `Rainfall(mm)`,
          Snowfall = `Snowfall (cm)`,
-         Fu
+         FunctioningDay = `Functioning Day`,
          .keep='unused')
+str(data_raw)
 ```
 
+### 6. Explore summary statistics
 
-### 6a. Create summary statistics
+Now, to display some summaries of the tidied data. Numeric summaries and then categorical contingency tables.
 
-### 6b. Review summary and subset
+```{r}
+data_raw |>
+  select(where(is.numeric)) |>
+  psych::describe() |>
+  select(min,max,range,median,sd)
+```
+
+Nothing stands out here, as noted earlier. Now, to contingency tables for categorical variables.
+
+```{r}
+data_raw |>
+  group_by(Seasons) |>
+  summarize(n())
+```
+
+```{r}
+data_raw |>
+  group_by(Holiday) |>
+  summarize(n())
+```
+
+```{r}
+data_raw |>
+  group_by(FunctioningDay) |>
+  summarize(n())
+```
+
+```{r}
+data_raw |>
+  group_by(FunctioningDay,Seasons) |>
+  summarize(n())
+```
+
+I don't understand truly what the `FunctioningDay` field means. The notes say it is a target / response variable, but exactly how to interpret that is unclear to me. I'll check grouping by this field.
+
+```{r}
+data_raw |>
+  group_by(FunctioningDay) |>
+  summarize(Min=min(BikeCount),
+            Max=max(BikeCount),
+            Avg=mean(BikeCount)
+            )
+```
+
+Oh, it is simply an indicator of when bikes were available. I presume we do not want to study the days when bikes did not allow usage, so now we will subset to remove those days (`FunctioningDay` = No).
+
+```{r}
+data_raw <- data_raw |>
+  filter(FunctioningDay == 'Yes')
+```
 
 ### 7. Summarize across hours
+
+Now for simplicity, we adjust our data to summarize across hours so that each day has only *one* observation associated with it.
+
+```{r}
+
+```
+
 
 ### 8a. Recreate summary statistics
 
