@@ -8,11 +8,11 @@ format: html
 
 This document demonstrates use of the principles and steps to make models in R:
 
-1. read data
-2. EDA
-3. split data
-4. fit models
-5. apply best model
+1.  read data
+2.  EDA
+3.  split data
+4.  fit models
+5.  apply best model
 
 ## Context
 
@@ -28,36 +28,70 @@ library(tidyverse)
 
 ### Dataset
 
-BLAHBLAHBLAH
-We will use a dataset from the UCI Machine Learning Repository. This data set is about bike sharing rentals
-and is available at the assignment link. You can learn more about the data here. The data is available at
-https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv
-The data description describes the following variables:
-• Date : day/month/year
-• Rented Bike count - Count of bikes rented at each hour
-• Hour - Hour of the day
-• Temperature-Temperature in Celsius
-• Humidity - %
-• Windspeed - m/s
-• Visibility - 10m
-• Dew point temperature - Celsius
-• Solar radiation - MJ/m2
-• Rainfall - mm
-• Snowfall - cm
-• Seasons - Winter, Spring, Summer, Autumn
-• Holiday - Holiday/No holiday
-• Functional Day - NoFunc(Non Functional Hours), Fun(Functional hours)
-BLAHBLAHBLAH
+The data comes from the UCI Machine Learning Repository. This set is about [bike sharing rentals](https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv). The data description describes the following variables:
+
+| FIELD                 | NOTES                                               |
+|------------------------|------------------------------------------------|
+| Date                  | day/month/year                                      |
+| Rented Bike count     | Count of bikes rented at each hour                  |
+| Hour                  | Hour of the day                                     |
+| Temperature           | Temperature in Celsius                              |
+| Humidity              | \%                                                  |
+| Windspeed             | m/s                                                 |
+| Visibility            | 10m                                                 |
+| Dew point temperature | Celsius                                             |
+| Solar radiation       | MJ/m2                                               |
+| Rainfall              | mm                                                  |
+| Snowfall              | cm                                                  |
+| Seasons               | Winter, Spring, Summer, Autumn                      |
+| Holiday               | Holiday/No holiday                                  |
+| Functional Day        | NoFunc(Non Functional Hours), Fun(Functional hours) |
 
 ## Read data
 
-BLAH
+```{r}
+data_url <- "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv"
+data_raw <- read_csv(
+  file = data_url, 
+  locale = locale(encoding = "latin1")
+  )
+```
 
 ## EDA
 
+Now, I need to review the data and clean it up, then summarize it.
+
 ### 1. Check for missing values
 
+```{r}
+data_raw |> map( ~sum(is.na(.)) )
+```
+
+Looks ok, no missing values (NA).
+
 ### 2. Check column types and values
+
+Do the column types look accurate?
+
+```{r}
+str(data_raw)
+```
+
+Observations and updates required:
+
+- Switch type to Date:
+  - `Date`
+- Switch type to Integer:
+  - `Rented Bike Count`
+  - `Hour`
+- Switch character lists to Factor:
+  - `Seasons`
+  - `Holiday`
+  - `Functioning Day`
+
+```{r}
+
+```
 
 ### 3. Convert Date field types
 
@@ -94,4 +128,3 @@ BLAHBLAH
 BLAH what is best?
 
 BLAH do it
-
