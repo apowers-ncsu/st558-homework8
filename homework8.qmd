@@ -28,7 +28,7 @@ library(tidyverse)
 
 ### Dataset
 
-The data comes from the UCI Machine Learning Repository. This set is about [bike sharing rentals](https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv). The data description describes the following variables:
+The data comes from the UCI Machine Learning Repository. This set is about [bike sharing rentals](https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv). More details available [here](https://archive.ics.uci.edu/dataset/560/seoul+bike+sharing+demand). The data description describes the following variables:
 
 | FIELD                 | NOTES                                               |
 |------------------------|------------------------------------------------|
@@ -64,7 +64,8 @@ Now, I need to review the data and clean it up, then summarize it.
 ### 1. Check for missing values
 
 ```{r}
-data_raw |> map( ~sum(is.na(.)) )
+data_raw |> 
+  map( ~sum(is.na(.)) )
 ```
 
 Looks ok, no missing values (NA).
@@ -88,16 +89,81 @@ Observations and updates required:
   - `Seasons`
   - `Holiday`
   - `Functioning Day`
+- Rename to remove spaces across most fields
+
+Do the numerical summaries look reasonable?
 
 ```{r}
-
+data_raw |>
+  select(where(is.numeric)) |>
+  psych::describe() |>
+  select(min,median,max,range,sd)
 ```
+
+Nothing looks unreasonable in the numeric variable spread.
+
+Do the categorical variable values look reasonable?
+
+```{r}
+data_raw |>
+  select(where(is_character),-Date) |>
+  map(unique)
+```
+
+Unique categorical values look fine as well.
 
 ### 3. Convert Date field types
 
+Now, let's fix the Date field format.
+
+```{r}
+data_raw <- data_raw |>
+  mutate(Date = as_date(Date,format="%d/%m/%Y"))
+str(data_raw$Date)
+```
+
 ### 4. Convert character field types
 
+Next, turn character fields into factors.
+
+```{r}
+data_raw <- data_raw |>
+  mutate(Seasons = as_factor(Seasons),
+         Holiday = as_factor(Holiday),
+         `Functioning Day` = as_factor(`Functioning Day`)
+         )
+str(select(data_raw,where(is.factor)))
+```
+
+Also, here, I will change the previously-noted fields into integers.
+
+```{r}
+data_raw <- data_raw |>
+  mutate(`Rented Bike Count` = as.integer(`Rented Bike Count`),
+         Hour = as.integer(Hour)
+         )
+str(select(data_raw,where(is_integer)))
+```
+
 ### 5. Rename variables
+
+And lastly, cleaning up the names for easier work without encoding.
+
+```{r}
+  data_raw |>
+  mutate(BikeCount = `Rented Bike Count`,
+         Temperature = `Temperature(°C)`,
+         Humidity = `Humidity(%)`,
+         WindSpeed = `Wind speed (m/s)`,
+         Visibility = `Visibility (10m)`,
+         DewPoint = `Dew point temperature(°C)`,
+         SolarRadiation = `Solar Radiation (MJ/m2)`,
+         Rainfall = `Rainfall(mm)`,
+         Snowfall = `Snowfall (cm)`,
+         Fu
+         .keep='unused')
+```
+
 
 ### 6a. Create summary statistics
 
