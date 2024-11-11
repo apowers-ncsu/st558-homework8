@@ -97,7 +97,13 @@ Do the numerical summaries look reasonable?
 data_raw |>
   select(where(is.numeric)) |>
   psych::describe() |>
-  select(min,max,range,median,sd)
+  select(
+    min,
+    max,
+    range,
+    median,
+    sd
+    )
 ```
 
 Nothing looks unreasonable in the numeric variable spread.
@@ -128,10 +134,11 @@ Next, turn character fields into factors.
 
 ```{r}
 data_raw <- data_raw |>
-  mutate(Seasons = as_factor(Seasons),
-         Holiday = as_factor(Holiday),
-         `Functioning Day` = as_factor(`Functioning Day`)
-         )
+  mutate(
+    Seasons = as_factor(Seasons),
+    Holiday = as_factor(Holiday),
+    `Functioning Day` = as_factor(`Functioning Day`)
+    )
 str(select(data_raw,where(is.factor)))
 ```
 
@@ -139,9 +146,10 @@ Also, here, I will change the previously-noted fields into integers.
 
 ```{r}
 data_raw <- data_raw |>
-  mutate(`Rented Bike Count` = as.integer(`Rented Bike Count`),
-         Hour = as.integer(Hour)
-         )
+  mutate(
+    `Rented Bike Count` = as.integer(`Rented Bike Count`),
+    Hour = as.integer(Hour)
+    )
 str(select(data_raw,where(is_integer)))
 ```
 
@@ -151,17 +159,19 @@ And lastly, cleaning up the names for easier work without encoding.
 
 ```{r}
 data_raw <- data_raw |>
-  mutate(BikeCount = `Rented Bike Count`,
-         Temperature = `Temperature(°C)`,
-         Humidity = `Humidity(%)`,
-         WindSpeed = `Wind speed (m/s)`,
-         Visibility = `Visibility (10m)`,
-         DewPoint = `Dew point temperature(°C)`,
-         SolarRadiation = `Solar Radiation (MJ/m2)`,
-         Rainfall = `Rainfall(mm)`,
-         Snowfall = `Snowfall (cm)`,
-         FunctioningDay = `Functioning Day`,
-         .keep='unused')
+  mutate(
+    BikeCount = `Rented Bike Count`,
+    Temperature = `Temperature(°C)`,
+    Humidity = `Humidity(%)`,
+    WindSpeed = `Wind speed (m/s)`,
+    Visibility = `Visibility (10m)`,
+    DewPoint = `Dew point temperature(°C)`,
+    SolarRadiation = `Solar Radiation (MJ/m2)`,
+    Rainfall = `Rainfall(mm)`,
+    Snowfall = `Snowfall (cm)`,
+    FunctioningDay = `Functioning Day`,         
+    .keep='unused'
+    )
 str(data_raw)
 ```
 
@@ -173,7 +183,13 @@ Now, to display some summaries of the tidied data. Numeric summaries and then ca
 data_raw |>
   select(where(is.numeric)) |>
   psych::describe() |>
-  select(min,max,range,median,sd)
+  select(
+    min,
+    max,
+    range,
+    median,
+    sd
+    )
 ```
 
 Nothing stands out here, as noted earlier. Now, to contingency tables for categorical variables.
@@ -207,10 +223,11 @@ I don't understand truly what the `FunctioningDay` field means. The notes say it
 ```{r}
 data_raw |>
   group_by(FunctioningDay) |>
-  summarize(Min=min(BikeCount),
-            Max=max(BikeCount),
-            Avg=mean(BikeCount)
-            )
+  summarize(
+    Min=min(BikeCount),
+    Max=max(BikeCount),
+    Avg=mean(BikeCount)
+    )
 ```
 
 Oh, it is simply an indicator of when bikes were available. I presume we do not want to study the days when bikes did not allow usage, so now we will subset to remove those days (`FunctioningDay` = No).
@@ -220,16 +237,91 @@ data_raw <- data_raw |>
   filter(FunctioningDay == 'Yes')
 ```
 
-### 7. Summarize across hours
+### 7. Consolidate dataset
 
 Now for simplicity, we adjust our data to summarize across hours so that each day has only *one* observation associated with it.
 
 ```{r}
-
+summary_data <- data_raw |>
+  group_by(Date,
+           Seasons,
+           Holiday
+           ) |>
+  summarize(
+    BikeCountSum = sum(BikeCount),
+    RainfallSum = sum(Rainfall),
+    SnowfallSum = sum(Snowfall),
+    TemperatureAvg = mean(Temperature),
+    HumidityAvg = mean(Humidity),
+    WindSpeedAvg = mean(WindSpeed),
+    VisibilityAvg = mean(Visibility),
+    DewPointAvg = mean(DewPoint),
+    SolarRadiationAvg = mean(SolarRadiation)
+    ) |>
+  select(
+    Date,
+    Seasons,
+    Holiday,
+    ends_with("Sum"),
+    ends_with("Avg")
+  )
+head(summary_data)
 ```
 
-
 ### 8a. Recreate summary statistics
+
+Now, to restate summaries of the updated dataset.
+
+```{r}
+summary_data |>
+  select(where(is.numeric)) |>
+  psych::describe() |>
+  select(
+    min,
+    max,
+    range,
+    median,
+    sd
+    )
+```
+
+Let's visualize this information a few ways - with box and whiskers as well as scatterplots.
+
+```{r}
+g <- summary_data |>
+  ggplot()
+g + 
+  geom_boxplot(
+    aes(
+      x=Seasons,
+      y=BikeCountSum,
+      color=Holiday
+    )
+  ) + 
+  labs(
+    title="Bike Counts per Season by Holiday"
+    )
+```
+
+On holidays, across all seasons, fewer bikes are used. However, the variation in range of max and min bikes used is much smaller on holidays. So, as a light interpretation notwithstanding the much smaller sample size of Holiday data, we might assess that holidays do garner a tight range of activity, consistently.
+
+```{r}
+g + 
+  geom_point(
+    aes(
+      x=TemperatureAvg,
+      y=BikeCountSum
+    )
+  ) + 
+  labs(
+    title="Bike Counts vs Temperature"
+    ) +
+  facet_grid(~Seasons)
+```
+
+The shapes here are interesting. In Winter, no matter the temperature, few bikes are used. In the spring, where it can be a bit cool to a bit warm, the number of bikes used quickly grows. In the summer, in high temperatures consistently, if temperature raises slightly, bike rentals decrease rapidly. Autumn is comparable to Spring in shape and range.
+
+Lastly, we display correlations for all numeric variables.
 
 ### 8b. Explore data via plots and correlations
 
