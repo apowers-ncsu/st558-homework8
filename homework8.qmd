@@ -400,7 +400,6 @@ recipe1 <- recipe(BikeCountSum ~ ., data = data_train) |>
 #testing |> summary()
 ```
 
-
 #### Recipe 2
 
 For this recipe, we start with Recipe 1 and add interaction terms between:
@@ -422,18 +421,25 @@ recipe2 <- recipe1 |>
   step_interact(terms = ~
                   TemperatureAvg *
                   RainfallSum
-                ) |>                  
-                  #) |>
-
-prep(training=data_train) |> bake(data_train)
-recipe2 |> summary()
-  #step_interact(terms = ~km_driven*year*starts_with("seller_type"))
-
-  
+                ) 
 ```
 
-
 #### Recipe 3
+
+For the third recipe, start from Recipe 2 and add quadratic terms for each numeric predictor. Since our dummy variables are technically *numeric* now, I'm excluding them by avoiding all those beginning with *is* (like *isSpring*, etc.).
+
+```{r}
+recipe3 <- recipe2 |>
+  step_poly(
+    all_numeric_predictors(),
+    -starts_with("is"),
+    degree=2
+    )
+```
+
+#### Fit models to each recipe
+
+
 
 ### Apply best model
 
