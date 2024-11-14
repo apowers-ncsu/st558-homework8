@@ -383,16 +383,55 @@ recipe1 <- recipe(BikeCountSum ~ ., data = data_train) |>
   step_dummy(c(Seasons,
                Holiday,
                Weekday_Weekend)
-             )
+             ) |>
   
-  
-#  prep(training=data_train) |>
-#bake(data_train)
+  #clean up names
+  step_rename(
+    isHoliday = Holiday_Holiday,
+    isWeekend = Weekday_Weekend_Weekend,
+    isSummerSeason = Seasons_Summer,
+    isSpringSeason = Seasons_Spring,
+    isAutumnSeason = Seasons_Autumn
+  )
+    
+    
+   # ) |>  prep(training=data_train) |>
+ #bake(data_train)
 #testing |> summary()
 ```
 
 
 #### Recipe 2
+
+For this recipe, we start with Recipe 1 and add interaction terms between:
+
+- seasons and holiday
+- seasons and temp
+- temp and rainfall
+
+```{r}
+recipe2 <- recipe1 |>
+  step_interact(terms = ~
+                  ends_with("Season") *
+                  ends_with("Holiday") 
+                ) |>
+  step_interact(terms = ~
+                  ends_with("Season") *
+                  TemperatureAvg
+                ) |>
+  step_interact(terms = ~
+                  TemperatureAvg *
+                  RainfallSum
+                ) |>                  
+                  #) |>
+
+prep(training=data_train) |> bake(data_train)
+recipe2 |> summary()
+  #step_interact(terms = ~km_driven*year*starts_with("seller_type"))
+
+  
+```
+
 
 #### Recipe 3
 
