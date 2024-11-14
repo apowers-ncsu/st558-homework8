@@ -245,7 +245,7 @@ data_raw <- data_raw |>
 Now for simplicity, we adjust our data to summarize across hours so that each day has only *one* observation associated with it.
 
 ```{r}
-summary_data <- data_raw |>
+data <- data_raw |>
   group_by(Date,
            Seasons,
            Holiday
@@ -268,7 +268,7 @@ summary_data <- data_raw |>
     ends_with("Sum"),
     ends_with("Avg")
   )
-head(summary_data)
+head(data)
 ```
 
 #### 8. Recreate summary statistics and explore plots
@@ -276,7 +276,7 @@ head(summary_data)
 Now, to restate summaries of the updated dataset.
 
 ```{r}
-summary_data |>
+data |>
   select(where(is.numeric)) |>
   psych::describe() |>
   select(
@@ -291,7 +291,7 @@ summary_data |>
 Let's visualize this information a few ways - with box and whiskers as well as scatterplots.
 
 ```{r}
-g <- summary_data |>
+g <- data |>
   ggplot()
 g + 
   geom_boxplot(
@@ -327,7 +327,7 @@ The shapes here are interesting. In Winter, no matter the temperature, few bikes
 Lastly, we display correlations for all numeric variables.
 
 ```{r}
-summary_data |>
+data |>
   select(where(is.numeric)) |>
   correlate() |>
   shave() |>
@@ -338,7 +338,14 @@ This package `corrr` has cool features, including this color-coded display of al
 
 ### Split the data
 
-BLAHBLAH 75/25, 10fold CV
+To analyze this data, which is small, we will split into training and test and then use 10-fold CV. In the split, we will use the `strata` argument to ensure a fair sample across the `seasons` variable.
+
+```{r}
+data_split <- initial_split(data, prop = 0.75, strata = Seasons)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+data_train_10Fold <- vfold_cv(data_train, 10)
+```
 
 ### Fit models
 
