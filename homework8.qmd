@@ -439,10 +439,82 @@ recipe3 <- recipe2 |>
 
 #### Fit models to each recipe
 
+We will fit the models using linear *lm* engine and use 10-fold CV to calculate error. 
 
+First, define the model engine.
+
+```{r}
+data_model <- linear_reg() |>
+  set_engine("lm")
+```
+
+Next, define workflows for each recipe.
+
+```{r}
+data_workflow1 <- workflow() |>
+  add_recipe(recipe1) |>
+  add_model(data_model)
+
+data_workflow2 <- workflow() |>
+  add_recipe(recipe2) |>
+  add_model(data_model)
+
+data_workflow3 <- workflow() |>
+  add_recipe(recipe3) |>
+  add_model(data_model)
+```
+
+Now, define and run the 10-fold CV for each. Out of curiosity, I am going to compare to a non-CV run as well.
+
+```{r}
+#non-CV for simple recipe 1
+data_fit_nonCV <- data_workflow1 |>
+  fit(data_train)
+
+#data_fit_nonCV |>
+# tidy()
+
+#10fold CV for each recipe
+recipe1_10Fold_metrics <- data_workflow1 |>
+  fit_resamples(data_train_10Fold) |>
+  collect_metrics()
+
+recipe2_10Fold_metrics <- data_workflow2 |>
+  fit_resamples(data_train_10Fold) |>
+  collect_metrics()
+
+recipe3_10Fold_metrics <- data_workflow3 |>
+  fit_resamples(data_train_10Fold) |>
+  collect_metrics()
+
+rbind(
+  recipe1_10Fold_metrics,
+  recipe2_10Fold_metrics,
+  recipe3_10Fold_metrics
+)
+```
+
+The *best* model of the three looks like the third recipe, with interaction terms and quadratic terms.
 
 ### Apply best model
 
-BLAH what is best?
+Now, let's fit it to the entire training dataset and compute RMSE.
 
-BLAH do it
+```{r}
+best_fit <- data_workflow3 |>
+  last_fit(data_split)
+best_fit |> collect_metrics()
+```
+
+Here is the coefficient table for our model, arranged by p-values to highlight the most predictive parameters.
+
+```{r}
+extract_fit_parsnip(best_fit) |> tidy() |> arrange(p.value)
+```
+
+So, recalling what we are doing here - predicting bike rental volume - it is interesting to note the predictors most likely to relate to bike rental volumes. I *think* that's what the lowest p-values represent here, the likelihood that this was a random relationship (slope of zero) with the outcome.
+
+- if we are in summer, we are likely to see more rentals
+- solar radiation increases with rentals, too (related to summer)
+- on the weekend, we are *less* likely to see rentals? That surprises me, so I checked my setup to be sure.
+- if raining, less bikes; this makes sense.
