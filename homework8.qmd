@@ -349,9 +349,48 @@ data_train_10Fold <- vfold_cv(data_train, 10)
 
 ### Fit models
 
-BLAHBLAH
-
 #### Recipe 1
+
+First recipe, ignore `Date` and instead work with weekday/weekend factor. Then standardize numeric variables to make comparable scales. Create dummy variables for seasons, holiday, and the day type.
+
+```{r}
+recipe1 <- recipe(BikeCountSum ~ ., data = data_train) |>
+  
+  #Date into weekend/weekday
+  step_date(Date) |>
+  step_mutate(
+    Weekday_Weekend = factor(if_else(
+      (Date_dow == "Sat") | (Date_dow == "Sun"),
+      "Weekend",
+      "Weekday")
+      )
+    ) |>
+  
+  #remove excess original Date fields
+  step_rm(c(Date,
+            Date_dow,
+            Date_month,
+            Date_year)
+          ) |>
+  
+  #normalize numerics
+  step_normalize(
+    all_numeric(),
+    -all_outcomes()
+    ) |>
+  
+  #dummy vars for categorical items
+  step_dummy(c(Seasons,
+               Holiday,
+               Weekday_Weekend)
+             )
+  
+  
+#  prep(training=data_train) |>
+#bake(data_train)
+#testing |> summary()
+```
+
 
 #### Recipe 2
 
